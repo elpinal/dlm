@@ -28,7 +28,7 @@ func run(prog string, rawurl string, prefix string) error {
 	if err != nil {
 		return err
 	}
-	dir := prefix + "/" + u.Host + "/" + path.Dir(u.Path)
+	dir := path.Join(prefix, "/", u.Host, "/", path.Dir(u.Path))
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
 	}

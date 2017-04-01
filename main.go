@@ -16,19 +16,19 @@ func main() {
 		fmt.Fprintln(os.Stdout, "dlm: need 1 argument")
 		os.Exit(2)
 	}
-	err := run(defaultProg, os.Args[1])
+	err := run(defaultProg, os.Args[1], os.Getenv("HOME")+"/Downloads")
 	if err != nil {
 		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 }
 
-func run(prog string, rawurl string) error {
+func run(prog string, rawurl string, prefix string) error {
 	u, err := url.Parse(rawurl)
 	if err != nil {
 		return err
 	}
-	dir := u.Host + "/" + path.Dir(u.Path)
+	dir := prefix + "/" + u.Host + "/" + path.Dir(u.Path)
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
 	}

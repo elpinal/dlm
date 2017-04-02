@@ -15,12 +15,12 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stdout, "dlm: need 1 argument")
+		fmt.Fprintln(os.Stderr, "dlm: need 1 argument")
 		os.Exit(2)
 	}
 	err := run(os.Args[1], os.Getenv("HOME")+"/Downloads")
 	if err != nil {
-		fmt.Fprintln(os.Stdout, err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

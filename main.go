@@ -56,7 +56,11 @@ func download(url, dir string) error {
 	}
 	defer f.Close()
 	w := newWriter(f, os.Stdout, l)
-	_, err = io.CopyBuffer(w, resp.Body, make([]byte, 1<<20))
+	bufSize := 1 << 20
+	if bufSize > l {
+		bufSize = l
+	}
+	_, err = io.CopyBuffer(w, resp.Body, make([]byte, bufSize))
 	if err != nil {
 		return err
 	}

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -78,6 +79,12 @@ func download(url, dir string) error {
 }
 
 func newWriter(w, output io.Writer, l int) *writer {
+	if w == nil {
+		w = ioutil.Discard
+	}
+	if output == nil {
+		output = ioutil.Discard
+	}
 	nw := &writer{
 		w:      w,
 		output: output,

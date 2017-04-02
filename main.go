@@ -71,7 +71,7 @@ func newWriter(w, output io.Writer, l int) *writer {
 		output: output,
 		l:      l,
 	}
-	go nw.log()
+	go nw.interval()
 	return nw
 }
 
@@ -95,7 +95,7 @@ func (w *writer) Write(p []byte) (int, error) {
 	return n, nil
 }
 
-func (w *writer) log() {
+func (w *writer) interval() {
 	c := time.Tick(100 * time.Millisecond)
 	width := len(strconv.Itoa(w.l))
 	for range c {

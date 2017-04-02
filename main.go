@@ -34,10 +34,7 @@ func run(rawurl string, prefix string) error {
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
 	}
-	if err := download(rawurl, dir); err != nil {
-		return err
-	}
-	return nil
+	return download(rawurl, dir)
 }
 
 func download(url, dir string) error {

@@ -3,10 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"strconv"
+	"time"
 )
 
 const defaultProg = "curl"
@@ -32,7 +37,7 @@ func run(prog string, rawurl string, prefix string) error {
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
 	}
-	if err := download(prog, rawurl, dir); err != nil {
+	if err := download2(rawurl, dir); err != nil {
 		return err
 	}
 	return nil
@@ -49,4 +54,62 @@ func download(prog string, url, dir string) error {
 		return err
 	}
 	return nil
+}
+
+func download2(url, dir string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	l, err := strconv.Atoi(resp.Header.Get("Content-Length"))
+	if err != nil {
+		return err
+	}
+	f, err := os.Create(filepath.Join(dir, path.Base(url)))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	w := newWriter(f, os.Stdout, l)
+	_, err = io.CopyBuffer(w, resp.Body, make([]byte, 1<<20))
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(w.output, "\r%3.f%% %[4]*[2]d/%d", 100*float32(w.n)/float32(w.l), w.n, w.l, len(strconv.Itoa(w.l)))
+	w.output.Write([]byte("\n"))
+	return nil
+}
+
+func newWriter(w, output io.Writer, l int) *writer {
+	nw := &writer{
+		w:      w,
+		output: output,
+		l:      l,
+	}
+	go nw.log()
+	return nw
+}
+
+type writer struct {
+	w      io.Writer
+	output io.Writer
+	l      int
+	n      int
+}
+
+func (w *writer) Write(p []byte) (int, error) {
+	n, err := w.w.Write(p)
+	if err != nil {
+		return 0, err
+	}
+	w.n += n
+	return n, nil
+}
+
+func (w *writer) log() {
+	c := time.Tick(100 * time.Millisecond)
+	for range c {
+		fmt.Fprintf(w.output, "\r%3.f%% %[4]*[2]d/%d", 100*float32(w.n)/float32(w.l), w.n, w.l, len(strconv.Itoa(w.l)))
+	}
 }

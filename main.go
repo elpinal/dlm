@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"net/http"
@@ -8,13 +9,19 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
 )
 
 func main() {
-	if len(os.Args) < 2 {
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Dlm is a download manager")
+		fmt.Fprintln(os.Stderr, "Usage: dlm urls...")
+	}
+	flag.Parse()
+	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "dlm: need 1 or more arguments")
 		os.Exit(2)
 	}
@@ -22,7 +29,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "dlm: on %s, it may not work well\n", runtime.GOOS)
 	}
 	prefix := os.Getenv("HOME") + "/Downloads"
-	for _, arg := range os.Args[1:] {
+	for _, arg := range flag.Args() {
 		err := run(arg, prefix)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)

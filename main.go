@@ -80,13 +80,14 @@ func newWriter(w, output io.Writer, l int) *writer {
 
 type writer struct {
 	w      io.Writer
-	output io.Writer
+	output io.Writer // for logging
 
-	l     int
-	width int
+	// read-only
+	l     int // content length
+	width int // width of "content length as string"
 
 	mu sync.Mutex
-	n  int
+	n  int // read count
 }
 
 func (w *writer) Write(p []byte) (int, error) {

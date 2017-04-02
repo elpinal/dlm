@@ -60,7 +60,7 @@ func download(url, dir string) error {
 	if err != nil {
 		return err
 	}
-	w.log(len(strconv.Itoa(w.l)))
+	w.log()
 	w.output.Write([]byte("\n"))
 	return nil
 }
@@ -70,6 +70,7 @@ func newWriter(w, output io.Writer, l int) *writer {
 		w:      w,
 		output: output,
 		l:      l,
+		width:  len(strconv.Itoa(l)),
 	}
 	go nw.interval()
 	return nw
@@ -78,7 +79,9 @@ func newWriter(w, output io.Writer, l int) *writer {
 type writer struct {
 	w      io.Writer
 	output io.Writer
-	l      int
+
+	l     int
+	width int
 
 	mu sync.Mutex
 	n  int
@@ -97,15 +100,14 @@ func (w *writer) Write(p []byte) (int, error) {
 
 func (w *writer) interval() {
 	c := time.Tick(100 * time.Millisecond)
-	width := len(strconv.Itoa(w.l))
 	for range c {
-		w.log(width)
+		w.log()
 	}
 }
 
-func (w *writer) log(width int) {
+func (w *writer) log() {
 	w.mu.Lock()
 	n := w.n
 	w.mu.Unlock()
-	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", 100*n/w.l, n, w.l, width)
+	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", 100*n/w.l, n, w.l, w.width)
 }

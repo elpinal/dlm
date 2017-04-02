@@ -43,10 +43,8 @@ func download(url, dir string) error {
 		return err
 	}
 	defer resp.Body.Close()
-	l, err := strconv.Atoi(resp.Header.Get("Content-Length"))
-	if err != nil {
-		return err
-	}
+	// Ignore error
+	l, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
 	f, err := os.Create(filepath.Join(dir, path.Base(url)))
 	if err != nil {
 		return err
@@ -54,7 +52,7 @@ func download(url, dir string) error {
 	defer f.Close()
 	w := newWriter(f, os.Stdout, l)
 	bufSize := 1 << 20
-	if bufSize > l {
+	if l > 0 && bufSize > l {
 		bufSize = l
 	}
 	_, err = io.CopyBuffer(w, resp.Body, make([]byte, bufSize))
@@ -110,6 +108,10 @@ func (w *writer) log() {
 	w.mu.Lock()
 	n := w.n
 	w.mu.Unlock()
+	if w.l == 0 {
+		fmt.Fprintf(w.output, "\r%d", n)
+		return
+	}
 	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", w.percentage(n), n, w.l, w.width)
 }
 

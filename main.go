@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -95,7 +96,9 @@ type writer struct {
 	w      io.Writer
 	output io.Writer
 	l      int
-	n      int
+
+	mu sync.Mutex
+	n  int
 }
 
 func (w *writer) Write(p []byte) (int, error) {
@@ -103,13 +106,19 @@ func (w *writer) Write(p []byte) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	w.mu.Lock()
 	w.n += n
+	w.mu.Unlock()
 	return n, nil
 }
 
 func (w *writer) log() {
 	c := time.Tick(100 * time.Millisecond)
+	l := w.l
 	for range c {
-		fmt.Fprintf(w.output, "\r%3.f%% %[4]*[2]d/%d", 100*float32(w.n)/float32(w.l), w.n, w.l, len(strconv.Itoa(w.l)))
+		w.mu.Lock()
+		n := w.n
+		w.mu.Unlock()
+		fmt.Fprintf(w.output, "\r%3.f%% %[4]*[2]d/%d", 100*float32(n)/float32(l), n, l, len(strconv.Itoa(l)))
 	}
 }

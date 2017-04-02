@@ -60,7 +60,7 @@ func download(url, dir string) error {
 	if err != nil {
 		return err
 	}
-	w.log(w.n, len(strconv.Itoa(w.l)))
+	w.log(len(strconv.Itoa(w.l)))
 	w.output.Write([]byte("\n"))
 	return nil
 }
@@ -99,13 +99,13 @@ func (w *writer) interval() {
 	c := time.Tick(100 * time.Millisecond)
 	width := len(strconv.Itoa(w.l))
 	for range c {
-		w.mu.Lock()
-		n := w.n
-		w.mu.Unlock()
-		w.log(n, width)
+		w.log(width)
 	}
 }
 
-func (w *writer) log(n, width int) {
+func (w *writer) log(width int) {
+	w.mu.Lock()
+	n := w.n
+	w.mu.Unlock()
 	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", 100*n/w.l, n, w.l, width)
 }

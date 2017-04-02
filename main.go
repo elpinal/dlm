@@ -109,5 +109,9 @@ func (w *writer) log() {
 	w.mu.Lock()
 	n := w.n
 	w.mu.Unlock()
-	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", 100*n/w.l, n, w.l, w.width)
+	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", w.percentage(n), n, w.l, w.width)
+}
+
+func (w *writer) percentage(n int) int {
+	return 100 * n / w.l
 }

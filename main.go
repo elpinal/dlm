@@ -107,5 +107,5 @@ func (w *writer) interval() {
 }
 
 func (w *writer) log(n, width int) {
-	fmt.Fprintf(w.output, "\r%3.f%% %[4]*[2]d/%d", 100*float32(n)/float32(w.l), n, w.l, width)
+	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", 100*n/w.l, n, w.l, width)
 }

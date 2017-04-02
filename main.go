@@ -97,11 +97,11 @@ func (w *writer) Write(p []byte) (int, error) {
 
 func (w *writer) log() {
 	c := time.Tick(100 * time.Millisecond)
-	l := w.l
+	width := len(strconv.Itoa(w.l))
 	for range c {
 		w.mu.Lock()
 		n := w.n
 		w.mu.Unlock()
-		fmt.Fprintf(w.output, "\r%3.f%% %[4]*[2]d/%d", 100*float32(n)/float32(l), n, l, len(strconv.Itoa(l)))
+		fmt.Fprintf(w.output, "\r%3.f%% %[4]*[2]d/%d", 100*float32(n)/float32(w.l), n, w.l, width)
 	}
 }

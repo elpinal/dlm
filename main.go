@@ -18,6 +18,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, "dlm: need 1 or more arguments")
 		os.Exit(2)
 	}
+	if runtime.GOOS != "darwin" {
+		fmt.Fprintf(os.Stderr, "dlm: on %s, it may not work well\n", runtime.GOOS)
+	}
 	prefix := os.Getenv("HOME") + "/Downloads"
 	for _, arg := range os.Args[1:] {
 		err := run(arg, prefix)

@@ -15,13 +15,16 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "dlm: need 1 argument")
+		fmt.Fprintln(os.Stderr, "dlm: need 1 or more arguments")
 		os.Exit(2)
 	}
-	err := run(os.Args[1], os.Getenv("HOME")+"/Downloads")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+	prefix := os.Getenv("HOME") + "/Downloads"
+	for _, arg := range os.Args[1:] {
+		err := run(arg, prefix)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	}
 }
 

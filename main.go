@@ -118,6 +118,7 @@ func (w *writer) interval() {
 	}
 }
 
+// log prints the percentage of read bytes, read bytes and content bytes.
 func (w *writer) log() {
 	w.mu.Lock()
 	n := w.n

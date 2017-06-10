@@ -14,12 +14,17 @@ $ go get -u github.com/elpinal/dlm
 
 ## Examples
 
+To download files:
+
 ```bash
 $ dlm example.com golang.org/pkg/path/filepath golang.org/ref/spec
 1270
 100% 28339/28339
 100% 219533/219533
 ```
+
+These files are stored in the ~/Downloads folder.
+Only macOS is supported.
 
 ## Contribution
 

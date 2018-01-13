@@ -18,12 +18,18 @@ To download files:
 
 ```bash
 $ dlm example.com golang.org/pkg/path/filepath golang.org/ref/spec
-1270
-100% 28339/28339
-100% 219533/219533
+1270 bytes
+100% 28339/28339 bytes
+100% 219533/219533 bytes
 ```
 
-These files are stored in the ~/Downloads folder.
+Then `open` the local content.
+
+```bash
+$ dlm -open example.com
+```
+
+These files are stored in the `$HOME/Downloads` folder.
 Only macOS is supported.
 
 ## Contribution

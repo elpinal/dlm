@@ -29,7 +29,7 @@ func main() {
 	if runtime.GOOS != "darwin" {
 		fmt.Fprintf(os.Stderr, "dlm: warning: on %s, it may not work well\n", runtime.GOOS)
 	}
-	prefix := os.Getenv("HOME") + "/Downloads"
+	prefix := filepath.Join(os.Getenv("HOME"), "Downloads")
 	for _, arg := range flag.Args() {
 		err := run(arg, prefix)
 		if err != nil {
@@ -44,7 +44,7 @@ func run(rawurl string, prefix string) error {
 	if err != nil {
 		return err
 	}
-	dir := path.Join(prefix, "/", u.Host, "/", path.Dir(u.Path))
+	dir := filepath.Join(prefix, u.Host, path.Dir(u.Path))
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
 	}

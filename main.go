@@ -27,7 +27,7 @@ func main() {
 		os.Exit(2)
 	}
 	if runtime.GOOS != "darwin" {
-		fmt.Fprintf(os.Stderr, "dlm: on %s, it may not work well\n", runtime.GOOS)
+		fmt.Fprintf(os.Stderr, "dlm: warning: on %s, it may not work well\n", runtime.GOOS)
 	}
 	prefix := os.Getenv("HOME") + "/Downloads"
 	for _, arg := range flag.Args() {

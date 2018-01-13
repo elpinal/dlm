@@ -131,10 +131,10 @@ func (w *writer) log() {
 	n := w.n
 	w.mu.Unlock()
 	if w.l == 0 {
-		fmt.Fprintf(w.output, "\r%d", n)
+		fmt.Fprintf(w.output, "\r%d bytes", n)
 		return
 	}
-	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d", w.percentage(n), n, w.l, w.width)
+	fmt.Fprintf(w.output, "\r%3d%% %[4]*[2]d/%d bytes", w.percentage(n), n, w.l, w.width)
 }
 
 func (w *writer) percentage(n int) int {

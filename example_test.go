@@ -8,5 +8,5 @@ func ExampleLog() {
 	w.Write(make([]byte, 10))
 	w.log()
 	// Output:
-	//  85%  850/1000
+	//  85%  850/1000 bytes
 }

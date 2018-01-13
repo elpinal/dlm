@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -19,8 +20,10 @@ import (
 func main() {
 	flag.Usage = func() {
 		fmt.Fprintln(os.Stderr, "Dlm is a download manager")
-		fmt.Fprintln(os.Stderr, "Usage: dlm urls...")
+		fmt.Fprintln(os.Stderr, "Usage: dlm [flags] urls...")
+		flag.PrintDefaults()
 	}
+	flagOpen := flag.Bool("open", false, "open downloaded content")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "dlm: need 1 or more arguments")
@@ -31,7 +34,7 @@ func main() {
 	}
 	prefix := filepath.Join(os.Getenv("HOME"), "Downloads")
 	for _, arg := range flag.Args() {
-		err := run(arg, prefix)
+		err := run(arg, prefix, *flagOpen)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -39,16 +42,25 @@ func main() {
 	}
 }
 
-func run(rawurl string, prefix string) error {
+func run(rawurl string, prefix string, flagOpen bool) error {
 	u, err := url.Parse(rawurl)
 	if err != nil {
 		return err
 	}
 	dir := filepath.Join(prefix, u.Host, path.Dir(u.Path))
+	if flagOpen {
+		return open(rawurl, dir)
+	}
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
 	}
 	return download(rawurl, dir)
+}
+
+func open(url string, dir string) error {
+	cmd := exec.Command("open", filepath.Join(dir, path.Base(url)))
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func download(url, dir string) error {

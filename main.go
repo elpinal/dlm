@@ -25,6 +25,7 @@ func main() {
 	}
 	flagOpen := flag.Bool("open", false, "open downloaded content")
 	flagGzip := flag.Bool("gzip", false, "decompress gzip files")
+	flagPS := flag.Bool("ps", false, "convert PostScript to PDF")
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "dlm: need 1 or more arguments")
@@ -35,7 +36,7 @@ func main() {
 	}
 	prefix := filepath.Join(os.Getenv("HOME"), "Downloads")
 	for _, arg := range flag.Args() {
-		err := run(arg, prefix, *flagOpen, *flagGzip)
+		err := run(arg, prefix, *flagOpen, *flagGzip, *flagPS)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -43,7 +44,7 @@ func main() {
 	}
 }
 
-func run(rawurl string, prefix string, flagOpen bool, flagGzip bool) error {
+func run(rawurl string, prefix string, flagOpen bool, flagGzip bool, flagPS bool) error {
 	u, err := url.Parse(rawurl)
 	if err != nil {
 		return err
@@ -54,6 +55,9 @@ func run(rawurl string, prefix string, flagOpen bool, flagGzip bool) error {
 	}
 	if flagGzip {
 		return gzip(rawurl, dir)
+	}
+	if flagPS {
+		return psToPDF(rawurl, dir)
 	}
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
@@ -69,6 +73,12 @@ func open(url string, dir string) error {
 
 func gzip(url string, dir string) error {
 	cmd := exec.Command("gzip", "--decompress", filepath.Join(dir, path.Base(url)))
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
+}
+
+func psToPDF(url string, dir string) error {
+	cmd := exec.Command("pstopdf", filepath.Join(dir, path.Base(url)))
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }

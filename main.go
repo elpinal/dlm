@@ -66,19 +66,19 @@ func run(rawurl string, prefix string, flagOpen bool, flagGzip bool, flagPS bool
 }
 
 func open(url string, dir string) error {
-	cmd := exec.Command("open", filepath.Join(dir, path.Base(url)))
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return withCommand(url, dir, "open")
 }
 
 func gzip(url string, dir string) error {
-	cmd := exec.Command("gzip", "--decompress", filepath.Join(dir, path.Base(url)))
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	return withCommand(url, dir, "gzip", "--decompress")
 }
 
 func psToPDF(url string, dir string) error {
-	cmd := exec.Command("pstopdf", filepath.Join(dir, path.Base(url)))
+	return withCommand(url, dir, "pstopdf")
+}
+
+func withCommand(url string, dir string, name string, args ...string) error {
+	cmd := exec.Command(name, append(args, filepath.Join(dir, path.Base(url)))...)
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
 }

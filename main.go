@@ -45,11 +45,10 @@ func main() {
 }
 
 func run(rawurl string, prefix string, flagOpen bool, flagGzip bool, flagPS bool) error {
-	u, err := url.Parse(rawurl)
+	dir, err := dirname(rawurl, prefix)
 	if err != nil {
 		return err
 	}
-	dir := filepath.Join(prefix, u.Host, path.Dir(u.Path))
 	if flagOpen {
 		return open(rawurl, dir)
 	}
@@ -63,6 +62,14 @@ func run(rawurl string, prefix string, flagOpen bool, flagGzip bool, flagPS bool
 		return err
 	}
 	return download(rawurl, dir)
+}
+
+func dirname(rawurl string, prefix string) (string, error) {
+	u, err := url.Parse(rawurl)
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(prefix, u.Host, path.Dir(u.Path)), nil
 }
 
 func open(url string, dir string) error {

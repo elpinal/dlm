@@ -23,9 +23,14 @@ func main() {
 		fmt.Fprintln(os.Stderr, "Usage: dlm [flags] urls...")
 		flag.PrintDefaults()
 	}
-	flagOpen := flag.Bool("open", false, "open downloaded content")
-	flagGzip := flag.Bool("gzip", false, "decompress gzip files")
-	flagPS := flag.Bool("ps", false, "convert PostScript to PDF")
+
+	var (
+		flagOpen     = flag.Bool("open", false, "open downloaded content")
+		flagGzip     = flag.Bool("gzip", false, "decompress gzip files")
+		flagPS       = flag.Bool("ps", false, "convert PostScript to PDF")
+		flagShowDest = flag.Bool("show-destination", false, "display destination paths corresponding to given URLs")
+	)
+
 	flag.Parse()
 	if len(flag.Args()) == 0 {
 		fmt.Fprintln(os.Stderr, "dlm: need 1 or more arguments")
@@ -36,7 +41,7 @@ func main() {
 	}
 	prefix := filepath.Join(os.Getenv("HOME"), "Downloads")
 	for _, arg := range flag.Args() {
-		err := run(arg, prefix, *flagOpen, *flagGzip, *flagPS)
+		err := run(arg, prefix, *flagOpen, *flagGzip, *flagPS, *flagShowDest)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -44,7 +49,7 @@ func main() {
 	}
 }
 
-func run(rawurl string, prefix string, flagOpen bool, flagGzip bool, flagPS bool) error {
+func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagShowDest bool) error {
 	dir, err := dirname(rawurl, prefix)
 	if err != nil {
 		return err
@@ -57,6 +62,9 @@ func run(rawurl string, prefix string, flagOpen bool, flagGzip bool, flagPS bool
 	}
 	if flagPS {
 		return psToPDF(rawurl, dir)
+	}
+	if flagShowDest {
+		return showDest(rawurl, dir)
 	}
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
@@ -85,9 +93,18 @@ func psToPDF(url string, dir string) error {
 }
 
 func withCommand(url string, dir string, name string, args ...string) error {
-	cmd := exec.Command(name, append(args, filepath.Join(dir, path.Base(url)))...)
+	cmd := exec.Command(name, append(args, computeDest(url, dir))...)
 	cmd.Stderr = os.Stderr
 	return cmd.Run()
+}
+
+func showDest(url string, dir string) error {
+	fmt.Println(computeDest(url, dir))
+	return nil
+}
+
+func computeDest(url string, dir string) string {
+	return filepath.Join(dir, path.Base(url))
 }
 
 func download(url, dir string) error {
@@ -98,7 +115,7 @@ func download(url, dir string) error {
 	defer resp.Body.Close()
 	// Ignore error
 	l, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
-	f, err := os.Create(filepath.Join(dir, path.Base(url)))
+	f, err := os.Create(computeDest(url, dir))
 	if err != nil {
 		return err
 	}

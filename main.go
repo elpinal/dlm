@@ -28,6 +28,7 @@ func main() {
 		flagOpen     = flag.Bool("open", false, "open downloaded content")
 		flagGzip     = flag.Bool("gzip", false, "decompress gzip files")
 		flagPS       = flag.Bool("ps", false, "convert PostScript to PDF")
+		flagDVI      = flag.Bool("dvi", false, "convert DVI to PDF")
 		flagShowDest = flag.Bool("show-destination", false, "display destination paths corresponding to given URLs")
 	)
 
@@ -41,7 +42,7 @@ func main() {
 	}
 	prefix := filepath.Join(os.Getenv("HOME"), "Downloads")
 	for _, arg := range flag.Args() {
-		err := run(arg, prefix, *flagOpen, *flagGzip, *flagPS, *flagShowDest)
+		err := run(arg, prefix, *flagOpen, *flagGzip, *flagPS, *flagDVI, *flagShowDest)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -49,7 +50,7 @@ func main() {
 	}
 }
 
-func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagShowDest bool) error {
+func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagDVI, flagShowDest bool) error {
 	dir, err := dirname(rawurl, prefix)
 	if err != nil {
 		return err
@@ -62,6 +63,9 @@ func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagShowDest 
 	}
 	if flagPS {
 		return psToPDF(rawurl, dir)
+	}
+	if flagDVI {
+		return dviToPDF(rawurl, dir)
 	}
 	if flagShowDest {
 		return showDest(rawurl, dir)
@@ -92,9 +96,20 @@ func psToPDF(url string, dir string) error {
 	return withCommand(url, dir, "pstopdf")
 }
 
-func withCommand(url string, dir string, name string, args ...string) error {
+func dviToPDF(url string, dir string) error {
+	cmd := getCommand(url, dir, "dvipdfmx")
+	cmd.Dir = dir
+	return cmd.Run()
+}
+
+func getCommand(url, dir, name string, args ...string) *exec.Cmd {
 	cmd := exec.Command(name, append(args, computeDest(url, dir))...)
 	cmd.Stderr = os.Stderr
+	return cmd
+}
+
+func withCommand(url string, dir string, name string, args ...string) error {
+	cmd := getCommand(url, dir, name, args...)
 	return cmd.Run()
 }
 

@@ -30,6 +30,7 @@ func main() {
 		flagPS       = flag.Bool("ps", false, "convert PostScript to PDF")
 		flagDVI      = flag.Bool("dvi", false, "convert DVI to PDF")
 		flagShowDest = flag.Bool("show-destination", false, "display destination paths corresponding to given URLs")
+		flagName     = flag.String("name", "", "specify a filename")
 	)
 
 	flag.Parse()
@@ -42,7 +43,7 @@ func main() {
 	}
 	prefix := filepath.Join(os.Getenv("HOME"), "Downloads")
 	for _, arg := range flag.Args() {
-		err := run(arg, prefix, *flagOpen, *flagGzip, *flagPS, *flagDVI, *flagShowDest)
+		err := run(arg, prefix, *flagOpen, *flagGzip, *flagPS, *flagDVI, *flagShowDest, *flagName)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -50,7 +51,7 @@ func main() {
 	}
 }
 
-func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagDVI, flagShowDest bool) error {
+func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagDVI, flagShowDest bool, flagName string) error {
 	dir, err := dirname(rawurl, prefix)
 	if err != nil {
 		return err
@@ -69,6 +70,9 @@ func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagDVI, flag
 	}
 	if flagShowDest {
 		return showDest(rawurl, dir)
+	}
+	if flagName != "" {
+		return downloadWithName(rawurl, dir, flagName)
 	}
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
@@ -123,6 +127,10 @@ func computeDest(url string, dir string) string {
 }
 
 func download(url, dir string) error {
+	return downloadWithName(url, dir, path.Base(url))
+}
+
+func downloadWithName(url, dir, name string) error {
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
@@ -130,7 +138,7 @@ func download(url, dir string) error {
 	defer resp.Body.Close()
 	// Ignore error
 	l, _ := strconv.Atoi(resp.Header.Get("Content-Length"))
-	f, err := os.Create(computeDest(url, dir))
+	f, err := os.Create(filepath.Join(dir, name))
 	if err != nil {
 		return err
 	}

@@ -71,11 +71,11 @@ func run(rawurl string, prefix string, flagOpen, flagGzip, flagPS, flagDVI, flag
 	if flagShowDest {
 		return showDest(rawurl, dir)
 	}
-	if flagName != "" {
-		return downloadWithName(rawurl, dir, flagName)
-	}
 	if err := os.MkdirAll(dir, 0777); err != nil {
 		return err
+	}
+	if flagName != "" {
+		return downloadWithName(rawurl, dir, flagName)
 	}
 	return download(rawurl, dir)
 }
